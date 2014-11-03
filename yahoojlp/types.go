@@ -28,8 +28,19 @@ type MAParseResultSet struct {
 	UniqResult UniqResult `xml:"uniq_result"`
 }
 
+func (rs MAParseResultSet) string() string {
+	ss := []string{}
+	if rs.MAResult.TotalCount > 0 {
+		ss = append(ss, fmt.Sprintf("ma_result=%s", rs.MAResult.String()))
+	}
+	if rs.UniqResult.TotalCount > 0 {
+		ss = append(ss, fmt.Sprintf("uniq_result=%s", rs.UniqResult.String()))
+	}
+	return strings.Join(ss, ", ")
+}
+
 func (rs MAParseResultSet) String() string {
-	return fmt.Sprintf("ma_result=%s, uniq_result=%s", rs.MAResult.String(), rs.UniqResult.String())
+	return fmt.Sprintf("{%s}", rs.string())
 }
 
 type MAResult struct {
@@ -38,10 +49,14 @@ type MAResult struct {
 	WordList      WordList `xml:"word_list"`
 }
 
-func (r MAResult) String() string {
+func (r MAResult) string() string {
 	return fmt.Sprintf(
 		"total_count=%d, filtered_count=%d, word_list=%s",
 		r.TotalCount, r.FilteredCount, r.WordList.String())
+}
+
+func (r MAResult) String() string {
+	return fmt.Sprintf("{%s}", r.string())
 }
 
 type UniqResult struct {
@@ -49,34 +64,46 @@ type UniqResult struct {
 	WordList WordWithCountList `xml:"word_list"`
 }
 
-func (r UniqResult) String() string {
+func (r UniqResult) string() string {
 	return fmt.Sprintf(
 		"total_count=%d, filtered_count=%d, word_list=%s",
 		r.TotalCount, r.FilteredCount, r.WordList.String())
+}
+
+func (r UniqResult) String() string {
+	return fmt.Sprintf("{%s}", r.string())
 }
 
 type WordList struct {
 	Words []Word `xml:"word"`
 }
 
-func (ws WordList) String() string {
+func (ws WordList) string() string {
 	ss := []string{}
 	for _, w := range ws.Words {
 		ss = append(ss, w.String())
 	}
 	return fmt.Sprintf("[%s]", strings.Join(ss, ", "))
+}
+
+func (ws WordList) String() string {
+	return fmt.Sprintf("{%s}", ws.string())
 }
 
 type WordWithCountList struct {
 	Words []WordWithCount `xml:"word"`
 }
 
-func (ws WordWithCountList) String() string {
+func (ws WordWithCountList) string() string {
 	ss := []string{}
 	for _, w := range ws.Words {
 		ss = append(ss, w.String())
 	}
 	return fmt.Sprintf("[%s]", strings.Join(ss, ", "))
+}
+
+func (ws WordWithCountList) String() string {
+	return fmt.Sprintf("{%s}", ws.string())
 }
 
 type Word struct {
@@ -87,10 +114,28 @@ type Word struct {
 	Feature  string `xml:"feature"`
 }
 
+func (w Word) string() string {
+	ws := []string{}
+	if w.Surface != "" {
+		ws = append(ws, fmt.Sprintf("surface=%s", w.Surface))
+	}
+	if w.Reading != "" {
+		ws = append(ws, fmt.Sprintf("reading=%s", w.Reading))
+	}
+	if w.Pos != "" {
+		ws = append(ws, fmt.Sprintf("pos=%s", w.Pos))
+	}
+	if w.Baseform != "" {
+		ws = append(ws, fmt.Sprintf("baseform=%s", w.Baseform))
+	}
+	if w.Feature != "" {
+		ws = append(ws, fmt.Sprintf("feature=%s", w.Feature))
+	}
+	return strings.Join(ws, ", ")
+}
+
 func (w Word) String() string {
-	return fmt.Sprintf(
-		"surface=%s, reading=%s, pos=%s, baseform=%s, feature=%s",
-		w.Surface, w.Reading, w.Pos, w.Baseform, w.Feature)
+	return fmt.Sprintf("{%s}", w.string())
 }
 
 type WordWithCount struct {
@@ -98,8 +143,12 @@ type WordWithCount struct {
 	Count int `xml:"count"`
 }
 
+func (w WordWithCount) string() string {
+	return fmt.Sprintf("%s, count=%d", w.Word.string(), w.Count)
+}
+
 func (w WordWithCount) String() string {
-	return fmt.Sprintf("%s, count=%d", w.Word.String(), w.Count)
+	return fmt.Sprintf("{%s}", w.string())
 }
 
 type InvalidArgumentError struct {
